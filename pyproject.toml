@@ -1,0 +1,25 @@
+[project]
+name = "task5"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jahus1loh", email = "jan@pastucha.pl" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "google-api-python-client>=2.201.0",
+    "google-auth-httplib2>=0.4.4",
+    "google-auth-oauthlib>=1.5.0",
+    "ruff>=0.17.3",
+]
+
+[project.scripts]
+task5 = "task5:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 80
