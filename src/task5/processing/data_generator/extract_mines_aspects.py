@@ -1,4 +1,22 @@
+import datetime
+from pathlib import Path
+import tomllib
 from collections.abc import Sequence
+
+from processing.data_generator.clean_extracted_aspects import (
+    clean_daily_growth,
+    clean_daily_output,
+    clean_days_count,
+    clean_events,
+    clean_mines,
+    clean_normal_distr,
+    clean_start_date,
+    clean_uniform_distr,
+)
+
+with Path("src/task5/config/config.toml").open("rb") as f:
+    cfg = tomllib.load(f)
+    weekdays = cfg["general"]["weekdays"]
 
 
 def extract_mines_aspects(spreadsheet_data):
@@ -14,7 +32,7 @@ def extract_mines_aspects(spreadsheet_data):
             daily_output = process_daily_output_row(row)
         if i == 7:
             daily_growth = process_daily_growth_row(row)
-        if i > 7:
+        if i > 8:
             events.append(process_event_row(row))
 
     return {
@@ -23,7 +41,7 @@ def extract_mines_aspects(spreadsheet_data):
         "random": distr_row,
         "daily_output": daily_output,
         "daily_growth": daily_growth,
-        "events": events,
+        "events": clean_events(events),
     }
 
 
@@ -37,7 +55,7 @@ def process_mines_row(row: Sequence[str]) -> Sequence[str]:
     rows_with_mines = row[1:]
     last_mine_index = rows_with_mines.index("")
     rows_with_mines = rows_with_mines[:last_mine_index]
-    return rows_with_mines
+    return clean_mines(rows_with_mines)
 
 
 def process_distribution_row(row: Sequence[str]) -> dict[str, object]:
@@ -50,16 +68,13 @@ def process_distribution_row(row: Sequence[str]) -> dict[str, object]:
 
 def process_normal_distribution(
     normal_distr_row: Sequence[str],
-) -> dict[str, str]:
+) -> dict[str, float]:
     mean_data = normal_distr_row[0]
     deviation_data = normal_distr_row[1]
     correlation_data = normal_distr_row[2]
-    return {
-        "distribution": "normal",
-        "mean": mean_data,
-        "deviation": deviation_data,
-        "correlation": correlation_data,
-    }
+    return clean_normal_distr(
+        mean_data, deviation_data, correlation_data
+    )
 
 
 def process_uniform_distribution(
@@ -67,24 +82,21 @@ def process_uniform_distribution(
 ) -> dict[str, str]:
     min_data = uniform_distr_row[0]
     max_data = uniform_distr_row[1]
-    return {"distribution": "uniform", "min": min_data, "max": max_data}
+    return clean_uniform_distr(
+        min_data, max_data
+    )
 
 
-def process_daily_output_row(row: Sequence[str]):
-    return {
-        "Monday": row[1],
-        "Tuesday": row[2],
-        "Wednesday": row[3],
-        "Thursday": row[4],
-        "Friday": row[5],
-        "Saturday": row[6],
-        "Sunday": row[7],
-    }
+def process_daily_output_row(row: Sequence[str]) -> dict[str, str]:
+    daily_output_row = {}
+    for i, weekday in enumerate(weekdays):
+        daily_output_row[weekday] = row[i + 1]
+    return clean_daily_output(daily_output_row)
 
 
 def process_daily_growth_row(row: Sequence[str]):
     daily_growth = row[1]
-    return {"daily_growth": daily_growth}
+    return clean_daily_growth(daily_growth)
 
 
 def process_event_row(row: Sequence[str]):
@@ -100,11 +112,11 @@ def process_event_row(row: Sequence[str]):
     }
 
 
-def retrieve_start_date(start_date_row: Sequence[str]) -> str:
+def retrieve_start_date(start_date_row: Sequence[str]) -> datetime.date:
     start_date = start_date_row[1]
-    return start_date
+    return clean_start_date(start_date)
 
 
-def retrieve_days_count(start_date_row: Sequence[str]) -> str:
-    days_count = int(start_date_row[2])
-    return days_count
+def retrieve_days_count(start_date_row: Sequence[str]) -> int:
+    days_count = start_date_row[2]
+    return clean_days_count(days_count)
