@@ -1,7 +1,8 @@
 import datetime
 import tomllib
-from collections.abc import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import Any
 
 from processing.get_generator_data.clean_extracted_aspects import (
     clean_daily_growth,
