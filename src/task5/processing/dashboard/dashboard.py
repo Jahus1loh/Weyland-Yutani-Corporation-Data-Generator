@@ -1,12 +1,9 @@
 import pandas as pd
 import streamlit as st
-from processing.dashboard.dashboard_charts import render_charts
-from processing.data_analysis.analyze_data import analyze_data
-from processing.data_analysis.helper_funcs import (
-    get_max_distance,
-    identify_distance_outliers,
-)
+from processing.dashboard.dashboard_charts import render_charts, to_frame
+from processing.data_analysis.helper_funcs import get_max_distance
 from processing.report.pdf_generator import generate_pdf_report
+from processing.data_analysis.analyze_data import identify_outliers
 
 st.set_page_config(
     page_title="Weyland-Yutani Mine Analytics",
@@ -42,11 +39,6 @@ def render_metrics(generated_data, value_col, outliers):
         )
 
 
-def render_outlier_table(outliers):
-    with st.expander(f"Distance outliers ({len(outliers)})"):
-        st.dataframe(outliers, width="stretch")
-
-
 def render_anomaly_tables(method_outliers: dict[str, pd.DataFrame]):
     with st.expander("Compare detection methods"):
         for method, outliers in method_outliers.items():
@@ -54,23 +46,11 @@ def render_anomaly_tables(method_outliers: dict[str, pd.DataFrame]):
             st.dataframe(outliers, width="stretch")
 
 
-def render_outlier_summary(results):
-    summary = pd.DataFrame(
-        [
-            {"Method": name, "Flagged observations": len(rows)}
-            for name, rows in results.items()
-        ]
-    )
-    st.dataframe(summary, hide_index=True, width="stretch")
-
-
-def render_outlier_tables(results):
-    for name, rows in results.items():
-        with st.expander(f"{name} ({len(rows)} flagged)"):
-            if rows.empty:
-                st.caption("No observations flagged by this method")
-            else:
-                st.dataframe(rows, hide_index=True, width="stretch")
+def render_outlier_table(results, data, value_col="output"):
+    for name, outliers in results.items():
+        frame = to_frame(outliers, data)[["date", value_col]]
+        with st.expander(f"{name} ({len(frame)})"):
+            st.dataframe(frame, hide_index=True)
 
 
 def render_pdf_controls(data, title, threshold, results):
@@ -100,10 +80,10 @@ def render_dashboard(
         st.info("No production generated_data available")
         return
     threshold = render_threshold_slider(generated_data, value_col, title)
-    outliers = identify_distance_outliers(generated_data, value_col, threshold)
+    outliers = identify_outliers(generated_data, threshold)
     render_metrics(generated_data, value_col, outliers)
     render_charts(generated_data, value_col, outliers)
-    render_outlier_table(outliers)
+    render_outlier_table(outliers, generated_data)
     if method_outliers:
         render_anomaly_tables(method_outliers)
     render_pdf_controls(generated_data, title, threshold, outliers)

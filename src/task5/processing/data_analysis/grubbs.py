@@ -5,7 +5,7 @@ from outliers import smirnov_grubbs as grubbs
 def identify_grubbs_outliers(generated_data: pd.DataFrame) -> dict:
     return {
         "total": identify_total_grubbs_outliers(generated_data),
-        "each_mine": identify_each_grubbs_outliers(generated_data),
+        # "each_mine": identify_each_grubbs_outliers(generated_data),
     }
 
 

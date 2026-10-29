@@ -6,7 +6,7 @@ from scipy.stats import zscore
 def identify_zscore_outliers(generated_data: pd.DataFrame) -> dict:
     return {
         "total": identify_total_zscore_outliers(generated_data),
-        "each_mine": identify_each_zscore_outliers(generated_data),
+        # "each_mine": identify_each_zscore_outliers(generated_data),
     }
 
 

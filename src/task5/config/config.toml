@@ -22,6 +22,4 @@ page_margin = 1.5
 small_gap = 0.4
 large_gap = 0.5
  
-chart_px = {"width"= 1200, "height"= 520, "scale"= 1}
-chart_size = {"width"= 17, "height"= 7.4}
 charts_per_page = 2

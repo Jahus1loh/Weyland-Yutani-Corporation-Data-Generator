@@ -19,22 +19,29 @@ def style_chart(fig, title, x_title, y_title):
     return fig
 
 
-def add_outlier_markers(fig, outliers, value_col):
-    if not outliers.empty:
-        fig.add_scatter(
-            x=outliers["date"],
-            y=outliers[value_col],
-            mode="markers",
-            name="Distance outliers",
-            marker={"color": "#DC2626", "size": 11, "symbol": "x"},
-        )
+def to_frame(outliers, data):
+    if isinstance(outliers, dict):
+        outliers = next(iter(outliers.values()))
+    if isinstance(outliers, pd.Series):
+        outliers = data.loc[outliers.index]
+    return outliers
+
+
+def add_outlier_markers(fig, results, data, value_col):
+    for name, outliers in results.items():
+        frame = to_frame(outliers, data)
+        if not frame.empty:
+            fig.add_scatter(
+                x=frame["date"], y=frame[value_col], mode="markers",
+                name=name, marker={"size": 11, "symbol": "x"},
+            )
     return fig
 
 
 def create_production_figure(data, value_col, outliers):
     fig = px.line(data, x="date", y=value_col, markers=True)
     fig.update_traces(line_color="#2563EB", line_width=2.5, marker_size=6)
-    fig = add_outlier_markers(fig, outliers, value_col)
+    fig = add_outlier_markers(fig, outliers, data, value_col)
     return style_chart(fig, "Daily production", "Date", "Output (units)")
 
 

@@ -36,10 +36,10 @@ def calculate_distance(
 
 
 def identify_distance_outliers(
-    generated_data: pd.DataFrame, value_col: str, threshold: float
+    generated_data: pd.DataFrame, threshold: float
 ) -> pd.DataFrame:
     return generated_data.loc[
-        calculate_distance(generated_data, value_col) > threshold
+        calculate_distance(generated_data, "output") > threshold
     ]
 
 

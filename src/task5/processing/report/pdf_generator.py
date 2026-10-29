@@ -24,6 +24,10 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from processing.dashboard.dashboard_charts import (
+    to_frame,
+)
+
 with Path("src/task5/config/config.toml").open("rb") as f:
     cfg = tomllib.load(f)
     value_column = cfg["pdf"]["value_column"]
@@ -34,9 +38,10 @@ with Path("src/task5/config/config.toml").open("rb") as f:
     small_gap = cfg["pdf"]["small_gap"] * cm
     large_gap = cfg["pdf"]["large_gap"] * cm
 
-    chart_px = cfg["pdf"]["chart_px"]
-    chart_size = cfg["pdf"]["chart_size"]
     charts_per_page = cfg["pdf"]["charts_per_page"]
+
+chart_px = {"width": 1200, "height": 520, "scale": 1}
+chart_size = {"width": 17 * cm, "height": 7.4 * cm}
 
 
 def _fmt_count(value) -> str:
@@ -73,7 +78,10 @@ def create_outlier_summary_rows(results):
 
 
 def create_outlier_records(rows):
-    return rows.items()
+    return [["Date", "Output"]] + [
+        [str(date), f"{value:,.2f}"]
+        for date, value in zip(rows["date"], rows["output"])
+    ]
 
 
 def create_report_table(rows):
@@ -156,13 +164,14 @@ def build_outlier_section(results, styles):
 
 
 def build_story(data, title, threshold, outliers, styles):
+    by_method = {name: to_frame(o, data) for name, o in outliers.items()}
     return [
         *build_header_section(data, title, styles),
         *build_summary_section(data, threshold, outliers),
         PageBreak(),
         *build_charts_section(data, outliers),
         PageBreak(),
-        *build_outlier_section(outliers, styles),
+        *build_outlier_section(by_method, styles),
     ]
 
 
