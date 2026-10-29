@@ -9,10 +9,7 @@ with Path("src/task5/config/config.toml").open("rb") as f:
 
 
 def calculate_daily_total(generated_data: pd.DataFrame) -> pd.DataFrame:
-    return (
-        generated_data.groupby("date", as_index=False)["output"]
-        .sum()
-    )
+    return generated_data.groupby("date", as_index=False)["output"].sum()
 
 
 def add_weekday(generated_data: pd.DataFrame) -> pd.DataFrame:
@@ -35,12 +32,12 @@ def calculate_distance(
     return (generated_data[value_col] - generated_data[value_col].mean()).abs()
 
 
-def identify_distance_outliers(
-    generated_data: pd.DataFrame, threshold: float
-) -> pd.DataFrame:
-    return generated_data.loc[
-        calculate_distance(generated_data, "output") > threshold
-    ]
+def to_frame(outliers, data):
+    if isinstance(outliers, dict):
+        outliers = next(iter(outliers.values()))
+    if isinstance(outliers, pd.Series):
+        outliers = data.loc[outliers.index]
+    return outliers
 
 
 def get_max_distance(generated_data: pd.DataFrame, value_col: str) -> float:

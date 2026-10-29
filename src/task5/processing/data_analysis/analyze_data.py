@@ -3,7 +3,7 @@ from processing.data_analysis.basic_stats import (
     calculate_mean_std_median,
 )
 from processing.data_analysis.grubbs import identify_grubbs_outliers
-from processing.data_analysis.helper_funcs import identify_distance_outliers
+from processing.data_analysis.distance import identify_distance_outliers
 from processing.data_analysis.iqr_outliers import (
     calculate_iqrs,
     identify_iqr_outliers,

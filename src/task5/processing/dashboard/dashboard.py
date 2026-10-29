@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
-from processing.dashboard.dashboard_charts import render_charts, to_frame
-from processing.data_analysis.helper_funcs import get_max_distance
+from processing.dashboard.dashboard_charts import render_charts
+from processing.data_analysis.helper_funcs import get_max_distance, to_frame
 from processing.report.pdf_generator import generate_pdf_report
 from processing.data_analysis.analyze_data import identify_outliers
 

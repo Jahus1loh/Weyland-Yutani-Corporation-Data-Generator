@@ -2,6 +2,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from processing.data_analysis.chart_analysis import calculate_weekday_average
+from processing.data_analysis.helper_funcs import to_frame
 
 
 def style_chart(fig, title, x_title, y_title):
@@ -17,14 +18,6 @@ def style_chart(fig, title, x_title, y_title):
     fig.update_xaxes(title=x_title, showgrid=False, ticks="outside")
     fig.update_yaxes(title=y_title, gridcolor="#E2E8F0", zeroline=False)
     return fig
-
-
-def to_frame(outliers, data):
-    if isinstance(outliers, dict):
-        outliers = next(iter(outliers.values()))
-    if isinstance(outliers, pd.Series):
-        outliers = data.loc[outliers.index]
-    return outliers
 
 
 def add_outlier_markers(fig, results, data, value_col):

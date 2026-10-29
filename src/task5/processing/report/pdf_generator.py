@@ -10,6 +10,9 @@ from processing.dashboard.dashboard_charts import (
     create_production_figure,
     create_weekday_figure,
 )
+from processing.data_analysis.helper_funcs import (
+    to_frame,
+)
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -22,10 +25,6 @@ from reportlab.platypus import (
     Spacer,
     Table,
     TableStyle,
-)
-
-from processing.dashboard.dashboard_charts import (
-    to_frame,
 )
 
 with Path("src/task5/config/config.toml").open("rb") as f:
