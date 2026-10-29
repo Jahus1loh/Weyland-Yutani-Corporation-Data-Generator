@@ -37,7 +37,6 @@ def render_metrics(
         ("Mean", stats["mean"]),
         ("Median", stats["median"]),
         ("Std. deviation", stats["std"]),
-        ("Distance outliers", len(outliers)),
     ]
     for column, (label, value) in zip(st.columns(4), values):
         column.metric(
