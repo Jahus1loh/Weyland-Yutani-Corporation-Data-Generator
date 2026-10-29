@@ -56,7 +56,7 @@ def render_mine_tabs(generated_data):
 def render_total_tab(tab, generated_data):
     with tab:
         daily_total = calculate_daily_total(generated_data)
-        render_dashboard(daily_total, "total_output", "All mines")
+        render_dashboard(daily_total, "output", "All mines")
 
 
 def render_single_mine_tab(tab, generated_data, mine):

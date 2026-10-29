@@ -12,7 +12,6 @@ def calculate_daily_total(generated_data: pd.DataFrame) -> pd.DataFrame:
     return (
         generated_data.groupby("date", as_index=False)["output"]
         .sum()
-        .rename(columns={"output": "total_output"})
     )
 
 
