@@ -14,6 +14,7 @@ from processing.get_generator_data.validate_extracted_aspects import (
 
 
 def clean_days_count(days_count: str) -> int:
+    days_count = days_count.replace(",", "")
     validate_days_count(days_count)
     return int(days_count)
 
@@ -33,6 +34,11 @@ def clean_normal_distr(
     deviation: str,
     correlation: str,
 ) -> Mapping[str, float]:
+    mean, deviation, correlation = (
+        mean.replace(",", ""),
+        deviation.replace(",", ""),
+        correlation.replace(",", ""),
+    )
     validate_normal_distr(mean, deviation, correlation)
     return {
         "distribution": "normal",
@@ -46,16 +52,25 @@ def clean_uniform_distr(
     minimum: str,
     maximum: str,
 ) -> Mapping[str, float]:
+    minimum, maximum = minimum.replace(",", ""), maximum.replace(",", "")
     validate_uniform_distr(minimum, maximum)
-    return {"distribution": "uniform", "min": float(minimum), "max": float(maximum)}
+    return {
+        "distribution": "uniform",
+        "min": float(minimum),
+        "max": float(maximum),
+    }
 
 
 def clean_daily_output(daily_output: Mapping) -> Mapping[str, float]:
     validate_daily_output(daily_output)
-    return {weekday: float(factor) for weekday, factor in daily_output.items()}
+    return {
+        weekday: float(factor.replace(",", ""))
+        for weekday, factor in daily_output.items()
+    }
 
 
 def clean_daily_growth(daily_growth: str) -> float:
+    daily_growth = daily_growth.replace(",", "")
     validate_daily_growth(daily_growth)
     value = daily_growth.strip().removesuffix("%")
     return float(value) / 100
@@ -68,9 +83,9 @@ def clean_events(events: Sequence[Mapping]) -> list[Mapping]:
         cleaned_events.append(
             {
                 "start_date": datetime.date.fromisoformat(event["start_date"]),
-                "duration": int(float(event["duration"])),
-                "factor": float(event["factor"]),
-                "probability": float(event["probability"]),
+                "duration": int(float(event["duration"].replace(",", ""))),
+                "factor": float(event["factor"].replace(",", "")),
+                "probability": float(event["probability"].replace(",", "")),
             }
         )
     return cleaned_events
