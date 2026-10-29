@@ -2,7 +2,6 @@ import pandas as pd
 from processing.data_analysis.basic_stats import (
     calculate_mean_std_median,
 )
-from processing.data_analysis.distance import identify_distance_outliers
 from processing.data_analysis.grubbs import identify_grubbs_outliers
 from processing.data_analysis.iqr_outliers import (
     calculate_iqrs,
@@ -30,8 +29,5 @@ def identify_outliers(
     return {
         "iqr_outliers": identify_iqr_outliers(generated_data, iqr),
         "z_score_outliers": identify_zscore_outliers(generated_data),
-        "distance": identify_distance_outliers(
-            generated_data, distance_threshold
-        ),
         "grubbs": identify_grubbs_outliers(generated_data)
     }
