@@ -42,8 +42,8 @@ def validate_daily_output(daily_output: Mapping[str, str]) -> None:
     for weekday in weekdays:
         if weekday not in daily_output:
             raise ValueError(f"Missing weekday factor: {weekday}")
-
-        factor = check_finite_number(daily_output[weekday], f"{weekday} factor")
+        num = daily_output[weekday].replace(",", "")
+        factor = check_finite_number(num, f"{weekday} factor")
         if factor < 0:
             raise ValueError(f"{weekday} factor cannot be negative")
 
@@ -68,9 +68,9 @@ def validate_events(events: Sequence[Mapping[str, str]]) -> None:
 def validate_event(event: Mapping[str, str]) -> None:
     check_correct_datetime_format(event["start_date"])
 
-    duration = check_finite_number(event["duration"], "Event duration")
-    factor = check_finite_number(event["factor"], "Event factor")
-    probability = check_probability(event["probability"])
+    duration = check_finite_number(event["duration"].replace(",", ""), "Event duration")
+    factor = check_finite_number(event["factor"].replace(",", ""), "Event factor")
+    probability = check_probability(event["probability"].replace(",", ""))
 
     if not duration.is_integer() or duration < 1:
         raise ValueError("Event duration must be a positive integer")
