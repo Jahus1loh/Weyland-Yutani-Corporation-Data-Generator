@@ -1,9 +1,11 @@
 import tomllib
+from collections.abc import Iterator, Sequence
 from html import escape
 from io import BytesIO
 from pathlib import Path
 
 import pandas as pd
+from plotly.graph_objects import Figure
 from processing.dashboard.dashboard_charts import (
     create_box_figure,
     create_histogram,
@@ -15,9 +17,10 @@ from processing.data_analysis.helper_funcs import (
 )
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import StyleSheet1, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.platypus import (
+    Flowable,
     Image,
     PageBreak,
     Paragraph,
@@ -26,6 +29,7 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+from structures.data_types import ByMethod, Results
 
 with Path("src/task5/config/config.toml").open("rb") as f:
     cfg = tomllib.load(f)
@@ -43,20 +47,22 @@ chart_px = {"width": 1200, "height": 520, "scale": 1}
 chart_size = {"width": 17 * cm, "height": 7.4 * cm}
 
 
-def _fmt_count(value) -> str:
+def _fmt_count(value: int) -> str:
     return f"{value:,}"
 
 
-def _fmt_number(value) -> str:
+def _fmt_number(value: float) -> str:
     return f"{value:,.2f}"
 
 
-def _chunked(items, size):
+def _chunked[T](items: Sequence[T], size: int) -> Iterator[Sequence[T]]:
     for start in range(0, len(items), size):
         yield items[start : start + size]
 
 
-def create_summary_rows(data, threshold):
+def create_summary_rows(
+    data: pd.DataFrame, threshold: float
+) -> Sequence[Sequence[str]]:
     stats = data[value_column].agg(["mean", "median", "std", "min", "max"])
     return [
         ["Metric", "Value"],
@@ -70,20 +76,20 @@ def create_summary_rows(data, threshold):
     ]
 
 
-def create_outlier_summary_rows(results):
+def create_outlier_summary_rows(results: ByMethod) -> Sequence[Sequence[str]]:
     return [["Detection method", "Flagged observations"]] + [
         [method, _fmt_count(len(rows))] for method, rows in results.items()
     ]
 
 
-def create_outlier_records(rows):
+def create_outlier_records(rows: pd.DataFrame) -> Sequence[Sequence[str]]:
     return [["Date", "Output"]] + [
         [str(date), f"{value:,.2f}"]
         for date, value in zip(rows["date"], rows["output"])
     ]
 
 
-def create_report_table(rows):
+def create_report_table(rows: Sequence[Sequence[str]]) -> Table:
     rows = [list(row) for row in rows]
     if not rows:
         rows = [["No data available"]]
@@ -101,12 +107,14 @@ def create_report_table(rows):
     return table
 
 
-def create_chart_image(figure):
+def create_chart_image(figure: Figure) -> Image:
     png = figure.to_image(format="png", **chart_px)
     return Image(BytesIO(png), **chart_size)
 
 
-def create_report_figures(data, outliers):
+def create_report_figures(
+    data: pd.DataFrame, outliers: Results
+) -> Sequence[Figure]:
     return [
         create_production_figure(data, value_column, outliers),
         create_box_figure(data, value_column),
@@ -115,7 +123,9 @@ def create_report_figures(data, outliers):
     ]
 
 
-def build_header_section(data, title, styles):
+def build_header_section(
+    data: pd.DataFrame, title: str, styles: StyleSheet1
+) -> Sequence[Flowable]:
     period = f"{data[date_column].min()} to {data[date_column].max()}"
     return [
         Paragraph(company_name, styles["Title"]),
@@ -127,7 +137,9 @@ def build_header_section(data, title, styles):
     ]
 
 
-def build_summary_section(data, threshold, results):
+def build_summary_section(
+    data: pd.DataFrame, threshold: float, results: ByMethod
+) -> Sequence[Flowable]:
     return [
         create_report_table(create_summary_rows(data, threshold)),
         Spacer(1, large_gap),
@@ -135,7 +147,9 @@ def build_summary_section(data, threshold, results):
     ]
 
 
-def build_charts_section(data, outliers):
+def build_charts_section(
+    data: pd.DataFrame, outliers: Results
+) -> Sequence[Flowable]:
     figures = create_report_figures(data, outliers)
     story = []
     for page_number, page_figures in enumerate(
@@ -148,7 +162,9 @@ def build_charts_section(data, outliers):
     return story
 
 
-def build_outlier_section(results, styles):
+def build_outlier_section(
+    results: ByMethod, styles: StyleSheet1
+) -> Sequence[Flowable]:
     story = [Paragraph("Flagged observations", styles["Heading1"])]
     for method, rows in results.items():
         story.append(Paragraph(escape(method), styles["Heading2"]))
@@ -162,7 +178,13 @@ def build_outlier_section(results, styles):
     return story
 
 
-def build_story(data, title, threshold, outliers, styles):
+def build_story(
+    data: pd.DataFrame,
+    title: str,
+    threshold: float,
+    outliers: Results,
+    styles: StyleSheet1,
+) -> Sequence[Flowable]:
     by_method = {name: to_frame(o, data) for name, o in outliers.items()}
     return [
         *build_header_section(data, title, styles),
@@ -174,7 +196,7 @@ def build_story(data, title, threshold, outliers, styles):
     ]
 
 
-def render_pdf(story) -> bytes:
+def render_pdf(story: Sequence[Flowable]) -> bytes:
     buffer = BytesIO()
     SimpleDocTemplate(
         buffer,

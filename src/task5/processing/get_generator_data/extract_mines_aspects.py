@@ -1,6 +1,6 @@
 import datetime
 import tomllib
-from collections.abc import Sequence
+from collections.abc import Any, Mapping, Sequence
 from pathlib import Path
 
 from processing.get_generator_data.clean_extracted_aspects import (
@@ -19,15 +19,21 @@ with Path("src/task5/config/config.toml").open("rb") as f:
     weekdays = cfg["general"]["weekdays"]
 
 
-def extract_mines_aspects(spreadsheet_data):
+def extract_mines_aspects(spreadsheet_data: str) -> Mapping[str, Any]:
     events = []
     for i, row in enumerate(spreadsheet_data):
-        if i == 2: start_date_row = process_start_date_row(row)
-        if i == 3: mines_row = process_mines_row(row)
-        if i == 5: distr_row = process_distribution_row(row)
-        if i == 6: daily_output = process_daily_output_row(row)
-        if i == 7: daily_growth = process_daily_growth_row(row)
-        if i > 8: events.append(process_event_row(row))
+        if i == 2:
+            start_date_row = process_start_date_row(row)
+        if i == 3:
+            mines_row = process_mines_row(row)
+        if i == 5:
+            distr_row = process_distribution_row(row)
+        if i == 6:
+            daily_output = process_daily_output_row(row)
+        if i == 7:
+            daily_growth = process_daily_growth_row(row)
+        if i > 8:
+            events.append(process_event_row(row))
 
     return {
         "dates_range": start_date_row,
@@ -39,7 +45,7 @@ def extract_mines_aspects(spreadsheet_data):
     }
 
 
-def process_start_date_row(row: Sequence[str]) -> dict[str, str]:
+def process_start_date_row(row: Sequence[str]) -> Mapping[str, Any]:
     start_date = retrieve_start_date(row)
     days_count = retrieve_days_count(row)
     return {"start_date": start_date, "days_count": days_count}
@@ -52,7 +58,7 @@ def process_mines_row(row: Sequence[str]) -> Sequence[str]:
     return clean_mines(rows_with_mines)
 
 
-def process_distribution_row(row: Sequence[str]) -> dict[str, object]:
+def process_distribution_row(row: Sequence[str]) -> Mapping[str, object]:
     if row[1] == "Normal":
         random_aspects = process_normal_distribution(row[2:5])
     else:
@@ -62,38 +68,34 @@ def process_distribution_row(row: Sequence[str]) -> dict[str, object]:
 
 def process_normal_distribution(
     normal_distr_row: Sequence[str],
-) -> dict[str, float]:
+) -> Mapping[str, float]:
     mean_data = normal_distr_row[0]
     deviation_data = normal_distr_row[1]
     correlation_data = normal_distr_row[2]
-    return clean_normal_distr(
-        mean_data, deviation_data, correlation_data
-    )
+    return clean_normal_distr(mean_data, deviation_data, correlation_data)
 
 
 def process_uniform_distribution(
     uniform_distr_row: Sequence[str],
-) -> dict[str, str]:
+) -> Mapping[str, str]:
     min_data = uniform_distr_row[0]
     max_data = uniform_distr_row[1]
-    return clean_uniform_distr(
-        min_data, max_data
-    )
+    return clean_uniform_distr(min_data, max_data)
 
 
-def process_daily_output_row(row: Sequence[str]) -> dict[str, str]:
+def process_daily_output_row(row: Sequence[str]) -> Mapping[str, float]:
     daily_output_row = {}
     for i, weekday in enumerate(weekdays):
         daily_output_row[weekday] = row[i + 1]
     return clean_daily_output(daily_output_row)
 
 
-def process_daily_growth_row(row: Sequence[str]):
+def process_daily_growth_row(row: Sequence[str]) -> float:
     daily_growth = row[1]
     return clean_daily_growth(daily_growth)
 
 
-def process_event_row(row: Sequence[str]):
+def process_event_row(row: Sequence[str]) -> Mapping[str, Any]:
     event_start_date = row[1]
     event_duration = row[2]
     event_factor = row[3]

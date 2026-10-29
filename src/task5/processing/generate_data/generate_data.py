@@ -1,9 +1,14 @@
 import datetime
-from collections.abc import Mapping, Sequence
+from collections.abc import Any, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
-from structures.data_types import DatesRangeType, EventType, GeneratorDataType
+from structures.data_types import (
+    DatesRangeType,
+    EventType,
+    GeneratorDataType,
+    MineRecord,
+)
 
 
 def generate_data(extracted_data: GeneratorDataType) -> pd.DataFrame:
@@ -13,7 +18,7 @@ def generate_data(extracted_data: GeneratorDataType) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def generate_dates(dates_range: DatesRangeType):
+def generate_dates(dates_range: DatesRangeType) -> Sequence[datetime.date]:
     start_date = dates_range["start_date"]
     days_count = dates_range["days_count"]
     return [
@@ -25,7 +30,7 @@ def generate_records(
     extracted_data: GeneratorDataType,
     dates: Sequence[datetime.date],
     events: Sequence[EventType],
-) -> Sequence[Mapping[str, str]]:
+) -> Sequence[MineRecord]:
     records = []
     for mine in extracted_data["mines"]:
         values = generate_base_output(len(dates), extracted_data["random"])
@@ -41,7 +46,7 @@ def create_mine_records(
     values: np.array,
     extracted_data: Mapping[str, str],
     events: Sequence[Mapping[str, str]],
-) -> Sequence[Mapping[str, str]]:
+) -> Sequence[MineRecord]:
     return [
         create_record(mine, date, values[day], day, extracted_data, events)
         for day, date in enumerate(dates)
@@ -55,7 +60,7 @@ def create_record(
     day: int,
     extracted_data: Mapping[str, str],
     events: Sequence[Mapping[str, str]],
-) -> Mapping[str, str]:
+) -> MineRecord:
     output = calculate_output(base_output, date, day, extracted_data, events)
     return {"date": date, "mine": mine, "output": round(output, 2)}
 
@@ -75,7 +80,7 @@ def calculate_output(
 
 def generate_base_output(
     days_count: int,
-    random_config: dict,
+    random_config: Mapping[str, Any],
 ) -> np.ndarray:
     distribution = random_config["distribution"]
     if distribution == "normal":
@@ -85,7 +90,7 @@ def generate_base_output(
 
 def generate_normal_output(
     days_count: int,
-    extracted_data: dict,
+    extracted_data: Mapping[str, Any],
 ) -> np.ndarray:
     mean, deviation = extracted_data["mean"], extracted_data["deviation"]
     correlation = extracted_data["correlation"]
@@ -103,7 +108,7 @@ def generate_normal_output(
 
 def generate_uniform_output(
     days_count: int,
-    extracted_data: dict,
+    extracted_data: Mapping[str, Any],
 ) -> np.ndarray:
     return np.random.uniform(
         extracted_data["min"],
@@ -113,12 +118,14 @@ def generate_uniform_output(
 
 
 def prepare_events(
-    events: Sequence[Mapping[str, str]],
-):
-    return [event for event in events if np.random.random() < event["probability"]]
+    events: Sequence[EventType],
+) -> Sequence[EventType]:
+    return [
+        event for event in events if np.random.random() < event["probability"]
+    ]
 
 
-def get_event_factor(date: datetime.date, events: Sequence[Mapping[str, str]]):
+def get_event_factor(date: datetime.date, events: Sequence[EventType]) -> float:
     factor = 1
     for event in events:
         if is_event_active(date, event):

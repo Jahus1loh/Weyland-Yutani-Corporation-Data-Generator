@@ -1,26 +1,27 @@
 import datetime
+from collections.abc import Mapping, Sequence
+from typing import Any, TypedDict
 
-from collections.abc import Sequence, Mapping
-from typing import TypedDict
+import pandas as pd
 
 
-class EventType[TypedDict]:
+class EventType(TypedDict):
     start_date: datetime.date
     duration: int
     factor: float
     probability: float
 
 
-class DatesRangeType[TypedDict]:
+class DatesRangeType(TypedDict):
     start_date: datetime.date
     days_count: int
 
 
-class MinesType[TypedDict]:
+class MinesType(TypedDict):
     mines: Sequence[str]
 
 
-class RandomType[TypedDict]:
+class RandomType(TypedDict):
     distribution: str
     mean: float
     deviation: float
@@ -29,10 +30,21 @@ class RandomType[TypedDict]:
     max: float
 
 
-class GeneratorDataType[TypedDict]:
+class GeneratorDataType(TypedDict):
     dates_range: DatesRangeType
     mines: MinesType
     random: RandomType
     daily_output: Mapping[str, float]
     daily_growth: float
     events: EventType
+
+class MineRecord(TypedDict):
+    date: datetime.date
+    mine: str
+    output: float
+
+type Results = Mapping[str, Any]
+type ByMethod = Mapping[str, pd.DataFrame]
+type OutlierResult = (
+    pd.DataFrame | pd.Series | Mapping[str, pd.DataFrame | pd.Series]
+)

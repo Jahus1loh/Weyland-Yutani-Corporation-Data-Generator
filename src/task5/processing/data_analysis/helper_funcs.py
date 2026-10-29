@@ -2,6 +2,7 @@ import tomllib
 from pathlib import Path
 
 import pandas as pd
+from structures.data_types import OutlierResult
 
 with Path("src/task5/config/config.toml").open("rb") as f:
     cfg = tomllib.load(f)
@@ -32,7 +33,7 @@ def calculate_distance(
     return (generated_data[value_col] - generated_data[value_col].mean()).abs()
 
 
-def to_frame(outliers, data):
+def to_frame(outliers: OutlierResult, data: pd.DataFrame) -> pd.DataFrame:
     if isinstance(outliers, dict):
         outliers = next(iter(outliers.values()))
     if isinstance(outliers, pd.Series):

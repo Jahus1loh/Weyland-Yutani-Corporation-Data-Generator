@@ -1,14 +1,18 @@
+from collections.abc import Mapping
+
 import pandas as pd
 from outliers import smirnov_grubbs as grubbs
 
 
-def identify_grubbs_outliers(generated_data: pd.DataFrame) -> dict:
+def identify_grubbs_outliers(
+    generated_data: pd.DataFrame,
+) -> Mapping[str, pd.DataFrame]:
     return {
-        "total": identify_total_grubbs_outliers(generated_data),
+        "total": mark_grubbs_outliers(generated_data),
     }
 
 
-def identify_total_grubbs_outliers(
+def mark_grubbs_outliers(
     generated_data: pd.DataFrame,
 ) -> pd.DataFrame:
     values = generated_data.groupby("date")["output"].sum()

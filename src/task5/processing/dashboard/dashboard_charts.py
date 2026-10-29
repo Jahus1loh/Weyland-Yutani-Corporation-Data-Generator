@@ -1,11 +1,19 @@
+from collections.abc import Mapping
+
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from processing.data_analysis.chart_analysis import calculate_weekday_average
 from processing.data_analysis.helper_funcs import to_frame
 
+OutlierData = pd.DataFrame | pd.Series
+OutlierResults = Mapping[str, OutlierData]
 
-def style_chart(fig, title, x_title, y_title):
+
+def style_chart(
+    fig: go.Figure, title: str, x_title: str, y_title: str
+) -> go.Figure:
     fig.update_layout(
         template="plotly_white",
         title={"text": title, "x": 0.02, "xanchor": "left"},
@@ -20,25 +28,32 @@ def style_chart(fig, title, x_title, y_title):
     return fig
 
 
-def add_outlier_markers(fig, results, data, value_col):
+def add_outlier_markers(
+    fig: go.Figure, results: str, data: pd.DataFrame, value_col: str
+) -> go.Figure:
     for name, outliers in results.items():
         frame = to_frame(outliers, data)
         if not frame.empty:
             fig.add_scatter(
-                x=frame["date"], y=frame[value_col], mode="markers",
-                name=name, marker={"size": 11, "symbol": "x"},
+                x=frame["date"],
+                y=frame[value_col],
+                mode="markers",
+                name=name,
+                marker={"size": 11, "symbol": "x"},
             )
     return fig
 
 
-def create_production_figure(data, value_col, outliers):
+def create_production_figure(
+    data: pd.DataFrame, value_col: str, outliers: OutlierResults
+) -> go.Figure:
     fig = px.line(data, x="date", y=value_col, markers=True)
     fig.update_traces(line_color="#2563EB", line_width=2.5, marker_size=6)
     fig = add_outlier_markers(fig, outliers, data, value_col)
     return style_chart(fig, "Daily production", "Date", "Output (units)")
 
 
-def create_box_figure(data, value_col):
+def create_box_figure(data: pd.DataFrame, value_col: str) -> go.Figure:
     fig = px.box(data, y=value_col, points="all")
     fig.update_traces(
         marker_color="#0F766E", marker_size=5, line_color="#115E59"
@@ -46,7 +61,7 @@ def create_box_figure(data, value_col):
     return style_chart(fig, "Production distribution", "", "Output (units)")
 
 
-def create_weekday_figure(data, value_col):
+def create_weekday_figure(data: pd.DataFrame, value_col: str) -> go.Figure:
     averages = calculate_weekday_average(data, value_col)
     fig = px.bar(averages, x="weekday", y="average_output")
     fig.update_traces(marker_color="#0F766E", marker_line_color="white")
@@ -58,7 +73,7 @@ def create_weekday_figure(data, value_col):
     )
 
 
-def create_histogram(data, value_col):
+def create_histogram(data: pd.DataFrame, value_col: str) -> go.Figure:
     fig = px.histogram(data, x=value_col, nbins=15)
     fig.update_traces(marker_color="#7C3AED", marker_line_color="white")
     return style_chart(
@@ -66,11 +81,13 @@ def create_histogram(data, value_col):
     )
 
 
-def show_chart(fig):
+def show_chart(fig: go.Figure) -> None:
     st.plotly_chart(fig, width="stretch", config={"displaylogo": False})
 
 
-def render_charts(data, value_col, outliers):
+def render_charts(
+    data: pd.DataFrame, value_col: str, outliers: OutlierResults
+) -> None:
     show_chart(create_production_figure(data, value_col, outliers))
     show_chart(create_box_figure(data, value_col))
     show_chart(create_weekday_figure(data, value_col))
