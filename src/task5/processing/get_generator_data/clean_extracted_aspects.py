@@ -1,7 +1,7 @@
 import datetime
 from collections.abc import Mapping, Sequence
 
-from processing.data_generator.validate_extracted_aspects import (
+from processing.get_generator_data.validate_extracted_aspects import (
     validate_daily_growth,
     validate_daily_output,
     validate_days_count,
@@ -35,6 +35,7 @@ def clean_normal_distr(
 ) -> Mapping[str, float]:
     validate_normal_distr(mean, deviation, correlation)
     return {
+        "distribution": "normal",
         "mean": float(mean),
         "deviation": float(deviation),
         "correlation": float(correlation),
@@ -46,7 +47,7 @@ def clean_uniform_distr(
     maximum: str,
 ) -> Mapping[str, float]:
     validate_uniform_distr(minimum, maximum)
-    return {"min": float(minimum), "max": float(maximum)}
+    return {"distribution": "uniform", "min": float(minimum), "max": float(maximum)}
 
 
 def clean_daily_output(daily_output: Mapping) -> Mapping[str, float]:
@@ -54,10 +55,10 @@ def clean_daily_output(daily_output: Mapping) -> Mapping[str, float]:
     return {weekday: float(factor) for weekday, factor in daily_output.items()}
 
 
-def clean_daily_growth(daily_growth: str) -> Mapping[str, float]:
+def clean_daily_growth(daily_growth: str) -> float:
     validate_daily_growth(daily_growth)
     value = daily_growth.strip().removesuffix("%")
-    return {"daily_growth": float(value) / 100}
+    return float(value) / 100
 
 
 def clean_events(events: Sequence[Mapping]) -> list[Mapping]:

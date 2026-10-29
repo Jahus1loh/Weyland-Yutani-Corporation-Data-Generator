@@ -1,9 +1,9 @@
 import datetime
-from pathlib import Path
 import tomllib
 from collections.abc import Sequence
+from pathlib import Path
 
-from processing.data_generator.clean_extracted_aspects import (
+from processing.get_generator_data.clean_extracted_aspects import (
     clean_daily_growth,
     clean_daily_output,
     clean_days_count,
@@ -22,18 +22,12 @@ with Path("src/task5/config/config.toml").open("rb") as f:
 def extract_mines_aspects(spreadsheet_data):
     events = []
     for i, row in enumerate(spreadsheet_data):
-        if i == 2:
-            start_date_row = process_start_date_row(row)
-        if i == 3:
-            mines_row = process_mines_row(row)
-        if i == 5:
-            distr_row = process_distribution_row(row)
-        if i == 6:
-            daily_output = process_daily_output_row(row)
-        if i == 7:
-            daily_growth = process_daily_growth_row(row)
-        if i > 8:
-            events.append(process_event_row(row))
+        if i == 2: start_date_row = process_start_date_row(row)
+        if i == 3: mines_row = process_mines_row(row)
+        if i == 5: distr_row = process_distribution_row(row)
+        if i == 6: daily_output = process_daily_output_row(row)
+        if i == 7: daily_growth = process_daily_growth_row(row)
+        if i > 8: events.append(process_event_row(row))
 
     return {
         "dates_range": start_date_row,
