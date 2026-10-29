@@ -36,7 +36,7 @@ def update_simulation():
 
 
 @st.fragment(run_every=("5s"))
-def process_data():
+def process():
     try:
         generated_data = update_simulation()
     except Exception as error:

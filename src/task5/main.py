@@ -1,8 +1,8 @@
-from processing.process_data import process_data
+from processing.process_data import process
 
 
 def main():
-    process_data()
+    process()
 
 
 if __name__ == "__main__":
