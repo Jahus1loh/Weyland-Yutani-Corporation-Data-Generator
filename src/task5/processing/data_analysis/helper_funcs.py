@@ -37,7 +37,7 @@ def to_frame(outliers: OutlierResult, data: pd.DataFrame) -> pd.DataFrame:
     if isinstance(outliers, dict):
         outliers = next(iter(outliers.values()))
     if isinstance(outliers, pd.Series):
-        outliers = data.loc[outliers.index]
+        outliers = data[data["date"].isin(outliers.index)]
     return outliers
 
 
