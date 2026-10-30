@@ -53,10 +53,10 @@ def render_anomaly_tables(method_outliers: Mapping[str, pd.DataFrame]) -> None:
 
 
 def render_outlier_table(
-    results: Results, data: pd.DataFrame, value_col: str
+    results: Results, data: pd.DataFrame
 ) -> None:
     for name, outliers in results.items():
-        frame = to_frame(outliers, data)[["date", value_col]]
+        frame = to_frame(outliers, data)[["date", "output"]]
         with st.expander(f"{name} ({len(frame)})"):
             st.dataframe(frame, hide_index=True)
 
